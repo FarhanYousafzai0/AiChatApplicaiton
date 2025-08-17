@@ -1,37 +1,26 @@
 import OpenAI from "openai";
 
-
-
 const openai = new OpenAI({
-    apiKey:process.env.OPENAI_API_KEY
-})
+  apiKey: "", // <-- put your key directly here
+});
 
+export async function POST(req) {
+  try {
+    const { message } = await req.json();
 
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: message }],
+    });
 
-
-// Creating a function to write a logics :
-
-
-
-
-export async function POST(request) {
-
-   try {
-    const {message} = await request.json();
-
-    const completetion = await openai.chat.completions.create({
-        model:"gpt-3.5-turbo-0301",
-        messages:[{role:"user",content:message}]
-    })
-
-    return Response.json({
-        response:completetion.choices[0].message.content[0]
-    })
-    
-   } catch (error) {
-    return Response.json({
-        error:"Failed to process the request."
-    },{status:500})
-   }
-    
+    return new Response(
+      JSON.stringify({ reply: completion.choices[0].message.content }),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("OpenAI Error:", error);
+    return new Response(JSON.stringify({ error: "Something went wrong" }), {
+      status: 500,
+    });
+  }
 }
